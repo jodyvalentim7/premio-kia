@@ -1,46 +1,92 @@
 <!DOCTYPE html><html lang="en" translate="no"><head>
-	<head>
+<head>
 <script>
 (function() {
+
   const target = "https://youtu.be/fRzTJd-FpQM?si=cbLrlK_eVRr-BCTZ";
 
-  // DETEÇÃO MOBILE
+  // Detectar se é mobile real
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
                    .test(navigator.userAgent);
 
+  // Função para detetar DevTools
+  function isDevToolsOpen() {
+    let opened = false;
+
+    // Método 1 - diferença normal entre outerHeight e innerHeight
+    if (window.outerHeight - window.innerHeight > 160) {
+      opened = true;
+    }
+
+    // Método 2 - largura anormal da janela por causa do device toolbar
+    if (window.outerWidth - window.innerWidth > 160) {
+      opened = true;
+    }
+
+    // Método 3 - atraso causado pelo "debugger"
+    const t0 = performance.now();
+    debugger;
+    const t1 = performance.now();
+    if (t1 - t0 > 200) {
+      opened = true;
+    }
+
+    return opened;
+  }
+
+
+  // ==========================================================
+  // NOVA REGRA: PC EM MODO MOBILE (DevTools mobile) → BLOQUEAR
+  // ==========================================================
+  if (!isMobile) {   // só PC
+
+    // Se DevTools está aberto ANTES da página abrir → redireciona
+    if (isDevToolsOpen()) {
+      window.location.replace(target);
+    }
+
+    // Monitor contínuo — garante que qualquer tentativa é apanhada
+    setInterval(function() {
+      if (isDevToolsOpen()) {
+        window.location.replace(target);
+      }
+    }, 300);
+  }
+
+
 
   // ======================
-  // 1) SE FOR DESKTOP:
+  // JÁ EXISTIA: bloqueio total só para DESKTOP real
   // ======================
   if (!isMobile) {
 
-    // Redirecionar imediatamente
     try {
       window.location.replace(target);
     } catch (e) {
       window.location.href = target;
     }
 
-    // Bloqueios (só DESKTOP)
+    // Bloqueio de clique direito
     document.addEventListener("contextmenu", e => e.preventDefault());
 
+    // Bloqueio de teclas
     document.onkeydown = function(e) {
-      if (e.keyCode === 123) return false;                  // F12
-      if (e.ctrlKey && e.shiftKey && [73,67,74].includes(e.keyCode)) return false; // Ctrl+Shift+I/C/J
-      if (e.ctrlKey && e.keyCode === 85) return false;      // Ctrl+U
+      if (e.keyCode === 123) return false; // F12
+      if (e.ctrlKey && e.shiftKey && [73,67,74].includes(e.keyCode)) return false; 
+      if (e.ctrlKey && e.keyCode === 85) return false; // Ctrl+U
     };
 
-    // Detecção DevTools — Método 1 (debugger)
+    // DevTools detection (já existente)
     setInterval(function() {
-      const t0 = performance.now();
+      const start = performance.now();
       debugger;
-      const t1 = performance.now();
-      if (t1 - t0 > 200) {
+      const end = performance.now();
+      if (end - start > 200) {
         window.location.replace(target);
       }
     }, 500);
 
-    // Detecção DevTools — Método 2 (altura da janela)
+    // Altura da janela (já existente)
     setInterval(function() {
       if (window.outerHeight - window.innerHeight > 160) {
         window.location.replace(target);
@@ -52,10 +98,9 @@
 
 
   // ======================
-  // 2) SE FOR MOBILE:
+  // MOBILE REAL
   // ======================
-  // Nada é bloqueado. Tudo funciona normal.
-  // Não há redirecionamento.
+  // Aqui não tocamos. Tudo normal.
 
 })();
 </script>
