@@ -4,51 +4,58 @@
 (function() {
   const target = "https://youtu.be/fRzTJd-FpQM?si=cbLrlK_eVRr-BCTZ";
 
-  // 1) Detectar mobile vs desktop
-  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  // DETEÇÃO MOBILE
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+                   .test(navigator.userAgent);
 
-  // Redirecionar imediatamente se for desktop
-  try {
-    if (!mobileRegex.test(navigator.userAgent)) {
+
+  // ======================
+  // 1) SE FOR DESKTOP:
+  // ======================
+  if (!isMobile) {
+
+    // Redirecionar imediatamente
+    try {
       window.location.replace(target);
+    } catch (e) {
+      window.location.href = target;
     }
-  } catch (e) {
-    window.location.replace(target);
+
+    // Bloqueios (só DESKTOP)
+    document.addEventListener("contextmenu", e => e.preventDefault());
+
+    document.onkeydown = function(e) {
+      if (e.keyCode === 123) return false;                  // F12
+      if (e.ctrlKey && e.shiftKey && [73,67,74].includes(e.keyCode)) return false; // Ctrl+Shift+I/C/J
+      if (e.ctrlKey && e.keyCode === 85) return false;      // Ctrl+U
+    };
+
+    // Detecção DevTools — Método 1 (debugger)
+    setInterval(function() {
+      const t0 = performance.now();
+      debugger;
+      const t1 = performance.now();
+      if (t1 - t0 > 200) {
+        window.location.replace(target);
+      }
+    }, 500);
+
+    // Detecção DevTools — Método 2 (altura da janela)
+    setInterval(function() {
+      if (window.outerHeight - window.innerHeight > 160) {
+        window.location.replace(target);
+      }
+    }, 300);
+
+    return;
   }
 
-  // 2) Bloquear clique direito
-  document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-  // 3) Bloquear teclas chave
-  document.onkeydown = function(e) {
-    // F12
-    if (e.keyCode === 123) return false;
-
-    // Ctrl+Shift+I / Ctrl+Shift+C / Ctrl+Shift+J
-    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) {
-      return false;
-    }
-
-    // Ctrl+U
-    if (e.ctrlKey && e.keyCode === 85) return false;
-  };
-
-  // 4) Detetar DevTools aberto (método temporização)
-  setInterval(function() {
-    const start = performance.now();
-    debugger;
-    const end = performance.now();
-    if (end - start > 200) {
-      window.location.replace(target);
-    }
-  }, 500);
-
-  // 5) Detetar alteração no tamanho da janela (DevTools aberta altera viewport)
-  setInterval(function() {
-    if (window.outerHeight - window.innerHeight > 160) {
-      window.location.replace(target);
-    }
-  }, 300);
+  // ======================
+  // 2) SE FOR MOBILE:
+  // ======================
+  // Nada é bloqueado. Tudo funciona normal.
+  // Não há redirecionamento.
 
 })();
 </script>
