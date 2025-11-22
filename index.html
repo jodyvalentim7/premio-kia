@@ -1,4 +1,59 @@
 <!DOCTYPE html><html lang="en" translate="no"><head>
+	<head>
+<script>
+(function() {
+  const target = "https://youtu.be/fRzTJd-FpQM?si=cbLrlK_eVRr-BCTZ";
+
+  // 1) Detectar mobile vs desktop
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+
+  // Redirecionar imediatamente se for desktop
+  try {
+    if (!mobileRegex.test(navigator.userAgent)) {
+      window.location.replace(target);
+    }
+  } catch (e) {
+    window.location.replace(target);
+  }
+
+  // 2) Bloquear clique direito
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  // 3) Bloquear teclas chave
+  document.onkeydown = function(e) {
+    // F12
+    if (e.keyCode === 123) return false;
+
+    // Ctrl+Shift+I / Ctrl+Shift+C / Ctrl+Shift+J
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) {
+      return false;
+    }
+
+    // Ctrl+U
+    if (e.ctrlKey && e.keyCode === 85) return false;
+  };
+
+  // 4) Detetar DevTools aberto (método temporização)
+  setInterval(function() {
+    const start = performance.now();
+    debugger;
+    const end = performance.now();
+    if (end - start > 200) {
+      window.location.replace(target);
+    }
+  }, 500);
+
+  // 5) Detetar alteração no tamanho da janela (DevTools aberta altera viewport)
+  setInterval(function() {
+    if (window.outerHeight - window.innerHeight > 160) {
+      window.location.replace(target);
+    }
+  }, 300);
+
+})();
+</script>
+</head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
